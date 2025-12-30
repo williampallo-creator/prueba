@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Control LED BLE</title>
+  <style>
+    body {
+      font-family: Arial;
+      text-align: center;
+      background: #f4f4f4;
+    }
+    button {
+      padding: 15px 30px;
+      font-size: 18px;
+      margin: 10px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Control LED ESP32</h1>
+
+<button onclick="connect()">Conectar Bluetooth</button><br><br>
+<button onclick="send('ON')">ENCENDER LED</button>
+<button onclick="send('OFF')">APAGAR LED</button>
+
+<script>
+let device;
+let characteristic;
+
+const SERVICE_UUID = '12345678-1234-1234-1234-1234567890ab';
+const CHAR_UUID = 'abcd';
+
+async function connect() {
+  device = await navigator.bluetooth.requestDevice({
+    filters: [{ name: 'ESP32_LED_TEST' }],
+    optionalServices: [SERVICE_UUID]
+  });
+
+  const server = await device.gatt.connect();
+  const service = await server.getPrimaryService(SERVICE_UUID);
+  characteristic = await service.getCharacteristic(CHAR_UUID);
+
+  alert('Bluetooth conectado');
+}
+
+function send(cmd) {
+  if (!characteristic) {
+    alert('Primero conecta el Bluetooth');
+    return;
+  }
+  const encoder = new TextEncoder();
+  characteristic.writeValue(encoder.encode(cmd));
+}
+</script>
+
+</body>
+</html>
